@@ -1,52 +1,85 @@
 ##Threat Hunt Scenario. Devices Accidentally Exposed to the Internet##
 
-1. Preparation
-Goal:
-Set up the hunt by defining what you're looking for.
+<img width="1940" height="1216" alt="image" src="https://github.com/user-attachments/assets/34efe54f-3e8e-4870-800e-e0f7837d1037" />
+
+_____
+Platforms and Languages Leveraged:
+
+- Windows 11 Virtual Machines (Microsoft Azure)
+
+- EDR Platform: Microsoft Defender for Endpoint
+
+- Kusto Query Language (KQL)
+_____
+Scenario
 
 During routine maintenance, the security team is tasked with investigating any VMs in the shared services cluster (handling DNS, Domain Services, DHCP, etc.) that have mistakenly been exposed to the public internet. The goal is to identify any misconfigured VMs and check for potential brute-force login attempts/successes from external sources.
 Activity: Develop a hypothesis based on threat intelligence and security gaps (e.g., “Could there be lateral movement in the network?”).
 During the time the devices were unknowingly exposed to the internet, it’s possible that someone could have actually brute-force logged into some of them since some of the older devices do not have account lockout configured for excessive failed login attempts.
 
-2. Data Collection
+_____
+
+Steps taken:
+
+1. Preparation
+Goal:
+
+- Set up the hunt by defining what you're looking for.
+
+3. Data Collection
    
-Goal: Gather relevant data from logs, network traffic, and endpoints.
-Consider inspecting the logs to see which devices have been exposed to the internet and have received excessive failed login attempts. Take note of the source IP addresses and number of failures, etc.
+Goal:
+
+- Gather relevant data from logs, network traffic, and endpoints.
+
+- Consider inspecting the logs to see which devices have been exposed to the internet and have received excessive failed login attempts.
+
+- Take note of the source IP addresses and number of failures, etc.
+
 Activity: Ensure data is available from all key sources for analysis.
-Ensure the relevant tables contain recent logs:
+- Ensure the relevant tables contain recent logs:
 DeviceInfo
 DeviceLogonEvents
+_____
 
 3. Data Analysis
    
 Goal: Analyze data to test your hypothesis.
 Activity: Look for anomalies, patterns, or indicators of compromise (IOCs) using various tools and techniques.
-Is there any evidence of brute force success (many failed logins followed by a success?) on your VM or ANY VMs in the environment?
-If so, what else happened on that machine around the same time? Were any bad actors able to log in?
+
+- Is there any evidence of brute force success (many failed logins followed by a success?) on your VM or ANY VMs in the environment?
+
+- If so, what else happened on that machine around the same time? Were any bad actors able to log in?
+_____
 
 4. Investigation
    
 Goal: Investigate any suspicious findings.
-Activity: Dig deeper into detected threats, determine their scope, and escalate if necessary. See if anything you find matches TTPs within the MITRE ATT&CK Framework.
-You can use ChatGPT to figure this out by pasting/uploading the logs: Scenario 1: TTPs
+Activity: Dig deeper into detected threats, determine their scope, and escalate if necessary.
+
+- See if anything you find matches TTPs within the MITRE ATT&CK Framework.
+
+_____
 
 5. Response
    
 Goal: Mitigate any confirmed threats.
 Activity: Work with security teams to contain, remove, and recover from the threat.
-Can anything be done?
+- Can anything be done?
+_____
 
 6. Documentation
 
 Goal: Record your findings and learn from them.
 Activity: Document what you found and use it to improve future hunts and defenses.
-Document what you did
+- Document what you did
+_____
 
 7. Improvement
 
 Goal: Improve your security posture or refine your methods for the next hunt. 
 Activity: Adjust strategies and tools based on what worked or didn’t.
-Anything we could have done to prevent the thing we hunted for? Any way we could have improved our hunting process?
+- Anything we could have done to prevent the thing we hunted for? Any way we could have improved our hunting process?
 _____
 
 Timeline Summary and Findings:
@@ -82,7 +115,8 @@ _____
 
 <Query no results> 
 
-The only successful remote/network logons in the last 30 days was for the ‘labuser’ account (13 total) 
+The only successful remote/network logons in the last 30 days was for the ‘labuser’ account (13 total)
+
 DeviceLogonEvents 
 | where DeviceName == "windows-target-1" 
 | where LogonType == "Network" 
@@ -92,7 +126,8 @@ DeviceLogonEvents
 _____
 
 There were zero (0) failed logons for the ‘labuser’ account, indicating that a brute force attempt for this 
-account didn’t take place, and a 1-time password guess is unlikely. 
+account didn’t take place, and a 1-time password guess is unlikely.
+
 DeviceLogonEvents 
 | where DeviceName == "windows-target-1" 
 | where LogonType == "Network" 
@@ -102,7 +137,8 @@ DeviceLogonEvents
 _____ 
 
 We checked all of the successful login IP addresses for the ‘labuser’ account to see if any of them were 
-unusual or from an unexpected location. All were normal. 
+unusual or from an unexpected location. All were normal.
+
 DeviceLogonEvents 
 | where DeviceName == "windows-target-1" 
 | where LogonType == "Network" 
@@ -113,14 +149,20 @@ DeviceLogonEvents
 <img width="1080" height="435" alt="image" src="https://github.com/user-attachments/assets/29db760b-d1cf-4bb5-9aca-547052f97ebc" />
 
 _____ 
+Conclusion:
+
 Though the device was exposed to the internet and clear brute force attempts have taken place. There is 
 no evidence of any brute force success or unauthorized access from the legitimate account ‘labuser’ 
 _____ 
 Relevant MITRE ATT&CK TTPs: - **T1583.003 – Acquire Infrastructure: Virtual Private Server**   
-(System exposed to the internet as a potential entry point) - **T1078 – Valid Accounts**   
-(Legitimate account “labuser” used for network logon) - **T1110.001 – Brute Force: Password Guessing**   
-(Multiple failed login attempts from various remote IPs) - **T1110.003 – Brute Force: Password Spraying**   
-(Likely broad login attempts across accounts) - **T1078.003 – Valid Accounts: Local Accounts**   
+(System exposed to the internet as a potential entry point) 
+- **T1078 – Valid Accounts**   
+(Legitimate account “labuser” used for network logon)
+- **T1110.001 – Brute Force: Password Guessing**   
+(Multiple failed login attempts from various remote IPs)
+- **T1110.003 – Brute Force: Password Spraying**   
+(Likely broad login attempts across accounts)
+- **T1078.003 – Valid Accounts: Local Accounts**   
 (Remote logons leveraging a legitimate local account) 
 _____ 
 Response Actions: 
